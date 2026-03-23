@@ -214,15 +214,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ============================================
-     DIPLOMA GALLERY
+     GALLERIES (Diplomas, Reviews, etc.)
      ============================================ */
-  const diplomaGallery = (() => {
-    const track = document.querySelector('.gallery-track');
-    const items = document.querySelectorAll('.gallery-item');
-    const prevBtn = document.querySelector('.gallery-arrow--prev');
-    const nextBtn = document.querySelector('.gallery-arrow--next');
-    const currentEl = document.querySelector('.gallery-current');
-    const totalEl = document.querySelector('.gallery-total');
+  const galleries = document.querySelectorAll('.gallery');
+
+  galleries.forEach((galleryEl) => {
+    const track = galleryEl.querySelector('.gallery-track');
+    const items = galleryEl.querySelectorAll('.gallery-item');
+    const prevBtn = galleryEl.querySelector('.gallery-arrow--prev');
+    const nextBtn = galleryEl.querySelector('.gallery-arrow--next');
+    const currentEl = galleryEl.querySelector('.gallery-current');
+    const totalEl = galleryEl.querySelector('.gallery-total');
 
     if (!track || items.length === 0) return;
 
@@ -236,12 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return 3;
     }
 
-    function getItemWidthPercent() {
-      const perView = getItemsPerView();
-      // Account for gap
-      return 100 / perView;
-    }
-
     function getMaxIndex() {
       return Math.max(0, total - getItemsPerView());
     }
@@ -251,8 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const perView = getItemsPerView();
       const gapPx = 16;
-      // Each item width inclusive of gap
-      const trackWrapper = document.querySelector('.gallery-track-wrapper');
+      
+      const trackWrapper = galleryEl.querySelector('.gallery-track-wrapper');
       if (!trackWrapper) return;
       const wrapperWidth = trackWrapper.offsetWidth;
       const itemWidth = (wrapperWidth - gapPx * (perView - 1)) / perView;
@@ -270,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Touch swipe
     let startX = 0, isDragging = false;
-    const wrapper = document.querySelector('.gallery-track-wrapper');
+    const wrapper = galleryEl.querySelector('.gallery-track-wrapper');
 
     wrapper?.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
@@ -287,11 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, { passive: true });
 
-    // Click to open lightbox
-    items.forEach((item, index) => {
-      item.addEventListener('click', () => openLightbox(index));
-    });
-
     // Recalculate on resize
     let resizeTimer;
     window.addEventListener('resize', () => {
@@ -300,11 +291,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     goTo(0);
-  })();
-
+  });
 
   /* ============================================
-     LIGHTBOX
+     LIGHTBOX (Dynamic per gallery)
      ============================================ */
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
@@ -314,27 +304,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const lightboxCurrentEl = document.querySelector('.lightbox-current');
   const lightboxTotalEl = document.querySelector('.lightbox-total');
 
-  const diplomaSrcs = Array.from(document.querySelectorAll('.gallery-item img')).map(img => img.src);
+  let currentLightboxSrcs = [];
   let lightboxIndex = 0;
 
-  if (lightboxTotalEl) lightboxTotalEl.textContent = diplomaSrcs.length;
+  function openLightbox(galleryItem) {
+    if (!lightbox) return;
+    
+    // Find the parent gallery of the clicked item
+    const parentGallery = galleryItem.closest('.gallery');
+    if (!parentGallery) return;
 
-  function openLightbox(index) {
-    lightboxIndex = index;
+    // Get all images within this specific gallery
+    const galleryItems = Array.from(parentGallery.querySelectorAll('.gallery-item'));
+    currentLightboxSrcs = galleryItems.map(item => item.querySelector('img').src);
+    
+    // Set total count for this specific gallery
+    if (lightboxTotalEl) lightboxTotalEl.textContent = currentLightboxSrcs.length;
+    
+    // Find index of the clicked item relative to this gallery
+    lightboxIndex = galleryItems.indexOf(galleryItem);
+    
     updateLightbox();
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
 
   function closeLightbox() {
+    if (!lightbox) return;
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
   }
 
   function updateLightbox() {
-    lightboxImg.src = diplomaSrcs[lightboxIndex];
+    if (!lightboxImg || currentLightboxSrcs.length === 0) return;
+    lightboxImg.src = currentLightboxSrcs[lightboxIndex];
     if (lightboxCurrentEl) lightboxCurrentEl.textContent = lightboxIndex + 1;
   }
+
+  // Attach click events
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    item.addEventListener('click', () => openLightbox(item));
+  });
 
   lightboxClose?.addEventListener('click', closeLightbox);
 
@@ -344,13 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lightboxPrev?.addEventListener('click', e => {
     e.stopPropagation();
-    lightboxIndex = (lightboxIndex - 1 + diplomaSrcs.length) % diplomaSrcs.length;
+    lightboxIndex = (lightboxIndex - 1 + currentLightboxSrcs.length) % currentLightboxSrcs.length;
     updateLightbox();
   });
 
   lightboxNext?.addEventListener('click', e => {
     e.stopPropagation();
-    lightboxIndex = (lightboxIndex + 1) % diplomaSrcs.length;
+    lightboxIndex = (lightboxIndex + 1) % currentLightboxSrcs.length;
     updateLightbox();
   });
 
@@ -359,11 +369,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!lightbox?.classList.contains('open')) return;
     if (e.key === 'Escape') closeLightbox();
     if (e.key === 'ArrowLeft') {
-      lightboxIndex = (lightboxIndex - 1 + diplomaSrcs.length) % diplomaSrcs.length;
+      lightboxIndex = (lightboxIndex - 1 + currentLightboxSrcs.length) % currentLightboxSrcs.length;
       updateLightbox();
     }
     if (e.key === 'ArrowRight') {
-      lightboxIndex = (lightboxIndex + 1) % diplomaSrcs.length;
+      lightboxIndex = (lightboxIndex + 1) % currentLightboxSrcs.length;
       updateLightbox();
     }
   });
@@ -378,9 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const diff = lbStartX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 60) {
       if (diff > 0) {
-        lightboxIndex = (lightboxIndex + 1) % diplomaSrcs.length;
+        lightboxIndex = (lightboxIndex + 1) % currentLightboxSrcs.length;
       } else {
-        lightboxIndex = (lightboxIndex - 1 + diplomaSrcs.length) % diplomaSrcs.length;
+        lightboxIndex = (lightboxIndex - 1 + currentLightboxSrcs.length) % currentLightboxSrcs.length;
       }
       updateLightbox();
     }

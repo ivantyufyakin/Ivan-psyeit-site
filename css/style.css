@@ -1595,63 +1595,35 @@ p {
   color: rgba(245, 240, 235, .6)
 }
 
-.reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+.reviews .gallery {
   margin-bottom: 48px;
 }
 
-.review-card {
-  background: rgba(255, 255, 255, .06);
-  border: 1px solid rgba(255, 255, 255, .1);
-  border-radius: 20px;
-  padding: 32px 26px;
-  transition: all .5s var(--spring);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+.reviews .gallery-counter {
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.review-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .05), transparent);
-  border-radius: 20px 20px 0 0;
-  pointer-events: none;
+.reviews .gallery-item {
+  background: var(--bg-dark-soft);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-.review-card:hover {
-  background: rgba(255, 255, 255, .12);
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .2);
-  border-color: rgba(255, 255, 255, .2);
+.reviews .gallery-item img {
+  height: 540px; 
+  object-fit: cover;
+  object-position: top;
 }
 
-.review-stars {
-  color: var(--accent);
-  font-size: .95rem;
-  margin-bottom: 16px;
-  letter-spacing: 2px
+.reviews .gallery-arrow {
+  background: rgba(44, 40, 36, .6);
+  color: var(--text-light);
+  border: 1px solid rgba(255,255,255,.15);
 }
 
-.review-text {
-  color: rgba(245, 240, 235, .8);
-  font-size: .9rem;
-  line-height: 1.75;
-  margin-bottom: 16px;
-  font-style: italic;
-}
-
-.review-author {
-  color: var(--accent-light);
-  font-weight: 600;
-  font-size: .85rem
+.reviews .gallery-arrow:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .reviews-cta {
